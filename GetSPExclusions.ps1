@@ -48,14 +48,14 @@ Switch ($SPVersion)
         $excludePaths += $path
         $message = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')+" - $path - path discovered"
         Write-Output $message | Out-File $LogPath -Append
-        $wssVirtualDirectoryRoots = Get-ChildItem iis:\sites | Select-Object-Object -ExpandProperty physicalPath
+        $wssVirtualDirectoryRoots = Get-ChildItem iis:\sites | Select-Object -ExpandProperty physicalPath
         $wssVirtualDirectoryRoots | ForEach-Object {$excludePaths.Add($_) >> $null}
         $iisTempRaw = $wssVirtualDirectoryRoots[0] -split '\\'
         $path = $iisTempRaw[0]+"\"+$iisTempRaw[1]+"\temp\IIS Temporary Compressed Files"
         $excludePaths += $path
         $message = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')+" - $path - path discovered"
         Write-Output $message | Out-File $LogPath -Append
-        $MAs = Get-SPManagedAccount | Select-Object-Object -ExpandProperty UserName
+        $MAs = Get-SPManagedAccount | Select-Object -ExpandProperty UserName
         foreach($MA in $MAs)
         {
             $ManAcctRaw = $MA.Split("\")
@@ -71,7 +71,7 @@ Switch ($SPVersion)
         $excludePaths += $path
         $message = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')+" - $path - path discovered"
         Write-Output $message | Out-File $LogPath -Append
-        $path = Get-SPEnterpriseSearchServiceInstance | Select-Object-Object -ExpandProperty DefaultIndexLocation
+        $path = Get-SPEnterpriseSearchServiceInstance | Select-Object -ExpandProperty DefaultIndexLocation
         $excludePaths += $path
         $message = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')+" - $path - path discovered"
         Write-Output $message | Out-File $LogPath -Append
@@ -115,11 +115,11 @@ $excludePaths
 <#
 $excludePaths += Get-SPEnterpriseSearchComponent -SearchTopology (Get-SPEnterpriseSearchServiceApplication).ActiveTopology | Where-Object {$_.Name -like "Index*"} | Select-Object -expandproperty RootDirectory
 $excludePaths += (Get-SPDiagnosticConfig).LogLocation
-$wssVirtualDirectoryRoots = Get-ChildItem iis:\sites | Select-Object-Object -ExpandProperty physicalPath
+$wssVirtualDirectoryRoots = Get-ChildItem iis:\sites | Select-Object -ExpandProperty physicalPath
 $wssVirtualDirectoryRoots | ForEach-Object {$excludePaths.Add($_) >> $null}
 $iisTempRaw = $wssVirtualDirectoryRoots[0] -split '\\'
 $excludePaths += $iisTempRaw[0]+"\"+$iisTempRaw[1]+"\temp\IIS Temporary Compressed Files"
-$MAs = Get-SPManagedAccount | Select-Object-Object -ExpandProperty UserName
+$MAs = Get-SPManagedAccount | Select-Object -ExpandProperty UserName
 foreach($MA in $MAs)
 {
     $ManAcctRaw = $MA.Split("\")
@@ -141,5 +141,5 @@ $excludePaths += [System.Runtime.InteropServices.RuntimeEnvironment]::GetRuntime
 $excludePaths
 
 Set-MpPreference -ExclusionPath $excludePaths
-Get-MpPreference | Select-Object-Object -ExpandProperty ExclusionPath | Format-List
+Get-MpPreference | Select-Object -ExpandProperty ExclusionPath | Format-List
 #>

@@ -12,28 +12,32 @@ Write-Output $message | Out-File $LogPath -Append
 [System.Collections.ArrayList]$excludePaths = @()
 $SPVersion = (Get-PSSnapin Microsoft.SharePoint.PowerShell).Version.Major
 
-Select Case $SPVersion
+Select-Object-Object Case $SPVersion
     16 #SP2016/2019
     {
-        Write-Output
+        $message = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')+" - SharePoint 2016 or SharePoint 2019 is installed - getting exclusions"
+        Write-Output $message | Out-File $LogPath -Append
+
     }
     15 #SP2013
     {
-
+        $message = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')+" - SharePoint 2013 - getting exclusions"
+        Write-Output $message | Out-File $LogPath -Append
     }
     14 #SP2010
     {
-
+        $message = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')+" - SharePoint 2010 is installed - getting exclusions"
+        Write-Output $message | Out-File $LogPath -Append
     }
 
 
-$excludePaths += Get-SPEnterpriseSearchComponent -SearchTopology (Get-SPEnterpriseSearchServiceApplication).ActiveTopology | ? {$_.Name -like "Index*"} | Select -expandproperty RootDirectory
+$excludePaths += Get-SPEnterpriseSearchComponent -SearchTopology (Get-SPEnterpriseSearchServiceApplication).ActiveTopology | Where-Object {$_.Name -like "Index*"} | Select-Object -expandproperty RootDirectory
 $excludePaths += (Get-SPDiagnosticConfig).LogLocation
-$wssVirtualDirectoryRoots = gci iis:\sites | Select -ExpandProperty physicalPath
-$wssVirtualDirectoryRoots | %{$excludePaths.Add($_) >> $null}
+$wssVirtualDirectoryRoots = Get-ChildItem iis:\sites | Select-Object-Object -ExpandProperty physicalPath
+$wssVirtualDirectoryRoots | ForEach-Object {$excludePaths.Add($_) >> $null}
 $iisTempRaw = $wssVirtualDirectoryRoots[0] -split '\\'
 $excludePaths += $iisTempRaw[0]+"\"+$iisTempRaw[1]+"\temp\IIS Temporary Compressed Files"
-$MAs = Get-SPManagedAccount | Select -ExpandProperty UserName
+$MAs = Get-SPManagedAccount | Select-Object-Object -ExpandProperty UserName
 foreach($MA in $MAs)
 {
     $ManAcctRaw = $MA.Split("\")
@@ -44,7 +48,7 @@ $genSetupPathRaw = ([Microsoft.Sharepoint.Utilities.SpUtility]::GetGenericSetupP
 $genSetupPathLen = $genSetupPathRaw.Length - 3
 $genSetupPath = [string]::Join("\",$genSetupPathRaw[0..$genSetupPathLen])
 $excludePaths += $genSetupPath
-$excludePaths += Get-SPEnterpriseSearchServiceInstance | Select -ExpandProperty DefaultIndexLocation
+$excludePaths += Get-SPEnterpriseSearchServiceInstance | Select-Object-Object -ExpandProperty DefaultIndexLocation
 $excludePaths += "%SystemDrive%\Users\Default\AppData\Local\Temp"
 $excludePaths += "%AllUsersProfile%\Microsoft\SharePoint"
 $excludePaths += "%SystemRoot%\System32\LogFiles"
@@ -55,4 +59,4 @@ $excludePaths += [System.Runtime.InteropServices.RuntimeEnvironment]::GetRuntime
 $excludePaths
 
 Set-MpPreference -ExclusionPath $excludePaths
-Get-MpPreference | Select -ExpandProperty ExclusionPath | fl
+Get-MpPreference | Select-Object-Object -ExpandProperty ExclusionPath | Format-List

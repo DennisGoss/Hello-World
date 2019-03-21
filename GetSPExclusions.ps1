@@ -3,16 +3,17 @@
   Discover Recommended Antivirus Exclusions on a SharePoint Server.
  
 .DESCRIPTION
-  Builds an array of recommended folder exclusions (http://support.microsoft.com/kb/952167). Use the array to add excusions to Windows Defenderor us for another antivirus products. Requires Local Admin and Farm Admin Rights.
+  Builds an array of recommended folder exclusions (http://support.microsoft.com/kb/952167). Use the array to add excusions to Windows 
+  Defenderor us for another antivirus products. Requires Local Admin and Farm Admin Rights.
 
 .PARAMETER Defender
-  If present will execute the commands to add the discovered exclusions to Windows Defender.
+  If present will execute the commands to add the discovered exclusions to Windows Defender. Disabled by default.
 
 .INPUTS
   None
 
 .OUTPUTS
-  Log file stored in Working Directory (Get-Date -Format 'yyyyMMdd')+"-AVExcludedPaths.log
+  Log file stored in Working Directory (Get-Date -Format 'yyyyMMdd')+"-GetSPExclusions.log
 
 .NOTES
   Version:        1.0
@@ -21,10 +22,13 @@
   Purpose/Change: Initial script development
   
 .EXAMPLE
-  Run the GetSPExclusions script to discover the recommended paths to be excluded and add the exclusions to Windows Defender (-Defender parameter)
+  Run the GetSPExclusions script to discover the recommended paths to be excluded and add the exclusions to Windows Defender
   GetSPExlusions -Defender
 #>
-
+Param 
+(
+    [switch]$defender = $false
+)
 Add-PSSnapin Microsoft.SharePoint.PowerShell -ErrorAction 0
 Import-Module WebAdministration -ErrorAction 0
 $LogPath = $PWD.Path+"\"+(Get-Date -Format 'yyyyMMdd')+"-AVExcludedPaths.log"
@@ -50,6 +54,7 @@ Switch ($SPVersion)
         Write-Output $message | Out-File $LogPath -Append
         $wssVirtualDirectoryRoots = Get-ChildItem iis:\sites | Select-Object -ExpandProperty physicalPath
         $wssVirtualDirectoryRoots | ForEach-Object {$excludePaths.Add($_) >> $null}
+        $wssVirtualDirectoryRoots | ForEach-Object {$message = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')+" - $_ - path discovered"; Write-Output $message | Out-File $LogPath -Append}
         $iisTempRaw = $wssVirtualDirectoryRoots[0] -split '\\'
         $path = $iisTempRaw[0]+"\"+$iisTempRaw[1]+"\temp\IIS Temporary Compressed Files"
         $excludePaths += $path
@@ -111,6 +116,15 @@ Switch ($SPVersion)
         Write-Output $message | Out-File $LogPath -Append
     }
 }
+
+if($defender)
+{ 
+  $message = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')+" - Defender Parameter is present - adding exclusions to Windows Defender"
+  Write-Output $message | Out-File $LogPath -Append
+  Set-MpPreference -ExclusionPath $excludePaths
+}
+
+
 $excludePaths
 <#
 $excludePaths += Get-SPEnterpriseSearchComponent -SearchTopology (Get-SPEnterpriseSearchServiceApplication).ActiveTopology | Where-Object {$_.Name -like "Index*"} | Select-Object -expandproperty RootDirectory

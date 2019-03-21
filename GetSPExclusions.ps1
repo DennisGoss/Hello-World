@@ -124,6 +124,9 @@ if($defender)
   Set-MpPreference -ExclusionPath $excludePaths -Verbose
 }
 
+#uncomment next line for console output of the excludedPaths array
+#$excludePaths
+
 $message = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')+" - Logging Stopped"
 Write-Output $message | Out-File $LogPath -Append
 <#

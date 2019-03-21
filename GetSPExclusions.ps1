@@ -121,11 +121,11 @@ if($defender)
 { 
   $message = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')+" - Defender Parameter is present - adding exclusions to Windows Defender"
   Write-Output $message | Out-File $LogPath -Append
-  Set-MpPreference -ExclusionPath $excludePaths
+  Set-MpPreference -ExclusionPath $excludePaths -Verbose
 }
 
-
-$excludePaths
+$message = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')+" - Logging Stopped"
+Write-Output $message | Out-File $LogPath -Append
 <#
 $excludePaths += Get-SPEnterpriseSearchComponent -SearchTopology (Get-SPEnterpriseSearchServiceApplication).ActiveTopology | Where-Object {$_.Name -like "Index*"} | Select-Object -expandproperty RootDirectory
 $excludePaths += (Get-SPDiagnosticConfig).LogLocation
